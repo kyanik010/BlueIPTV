@@ -1,4 +1,4 @@
-const { withAppBuildGradle, withGradleProperties, withAndroidManifest } = require('@expo/config-plugins');
+const { withAppBuildGradle, withGradleProperties, withAndroidManifest, withProjectBuildGradle } = require('@expo/config-plugins');
 const generateCode = require('@expo/config-plugins/build/utils/generateCode');
 
 function vlcGradleTaskPatch() {
@@ -73,6 +73,24 @@ module.exports = function withVlcMediaPlayer(config) {
     const properties = modConfig.modResults.filter((item) => item.key !== 'android.minSdkVersion');
     properties.push({ type: 'property', key: 'android.minSdkVersion', value: '26' });
     modConfig.modResults = properties;
+    return modConfig;
+  });
+
+  // Pin Google Cast to the last stable 22.3.x line. The floating '+' default
+  // resolves to 23.0.0, which pulls MediaRouter 1.9.0-beta01 and requires
+  // compileSdk 37 / AGP 9.1, incompatible with this Expo SDK 54 build.
+  config = withProjectBuildGradle(config, (modConfig) => {
+    const contents = modConfig.modResults.contents;
+    if (!contents.includes('castFrameworkVersion')) {
+      const extBlock = /ext\\s*\\{/;
+      if (!extBlock.test(contents)) {
+        throw new Error('Could not find the root Gradle ext block to pin Google Cast SDK');
+      }
+      modConfig.modResults.contents = contents.replace(
+        extBlock,
+        (match) => `${match}\\n        castFrameworkVersion = "22.3.1"`
+      );
+    }
     return modConfig;
   });
 
