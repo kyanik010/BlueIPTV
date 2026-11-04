@@ -82,14 +82,11 @@ module.exports = function withVlcMediaPlayer(config) {
   config = withProjectBuildGradle(config, (modConfig) => {
     const contents = modConfig.modResults.contents;
     if (!contents.includes('castFrameworkVersion')) {
-      const extBlock = /ext\s*\{/;
-      if (!extBlock.test(contents)) {
-        throw new Error('Could not find the root Gradle ext block to pin Google Cast SDK');
-      }
-      modConfig.modResults.contents = contents.replace(
-        extBlock,
-        (match) => match + '\n        castFrameworkVersion = "22.3.1"'
-      );
+      // The Expo-generated root build.gradle may not contain an ext block.
+      // A top-level Gradle ext block is valid and exposes the value to
+      // react-native-google-cast's safeExtGet lookup.
+      modConfig.modResults.contents =
+        'ext { castFrameworkVersion = "22.3.1" }\\n' + contents;
     }
     return modConfig;
   });
