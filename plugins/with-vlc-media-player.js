@@ -86,7 +86,7 @@ module.exports = function withVlcMediaPlayer(config) {
       // A top-level Gradle ext block is valid and exposes the value to
       // react-native-google-cast's safeExtGet lookup.
       modConfig.modResults.contents =
-        'ext { castFrameworkVersion = "22.3.1" }\\n' + contents;
+        'ext { castFrameworkVersion = "22.3.1" }\n' + contents;
     }
     return modConfig;
   });
